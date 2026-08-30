@@ -1,6 +1,6 @@
 # comic-localizer-text-masking
 
-Synthetic data + training for the comic-localizer **text-mask segmenter** — a
+Synthetic data + training for the comic-localizer **text-mask segmenter**: a
 binary pixel classifier ("text vs not-text") that runs on detector crops and
 feeds the localizer's cleaner. Detecting *where* text is / grouping it into OCR
 units is the detector's job, not this model's.
@@ -8,7 +8,7 @@ units is the detector's job, not this model's.
 ## Examples
 
 Held-out synthetic crops (flat procedural surfaces + clutter, no real pages) run
-through the trained model — each strip is **sample · ground truth · predicted ·
+through the trained model. Each strip is **sample · ground truth · predicted ·
 predicted overlay**. Note the multi-script coverage, vertical Japanese, low
 contrast, and clutter / screentone / line-screen rejection.
 
@@ -28,7 +28,7 @@ uv sync
 Installs the `text_masking` package (src layout) plus `comic-localizer`, pulled
 straight from [its repo](https://github.com/TareHimself/comic-localizer)
 (`localizer/` subdirectory) and pinned in `uv.lock`. Fonts live in `fonts/`
-(git-ignored — see `fonts/FONTS.md`); generated data and runs go under `data/`
+(git-ignored; see `fonts/FONTS.md`); generated data and runs go under `data/`
 and `runs/` (both ignored).
 
 Labels are authored and inspected in **[cv-label](https://github.com/TareHimself/cv-label)**;
@@ -69,10 +69,10 @@ Every `tm-*` command takes `--config <file>` (YAML or JSON) for its defaults;
 for the full option list.
 
 ```bash
-# 1. clean labelled pages — inpaint the text out (needs a LaMa torchscript)
+# 1. clean labelled pages: inpaint the text out (needs a LaMa torchscript)
 tm-prep-pages --labels labelled.cvlabel --out data/cleaned.cvlabel --cleaner_model lama_cleaning.pt
 
-# 2a. synthetic dataset — flat colour surfaces + procedural clutter
+# 2a. synthetic dataset: flat colour surfaces + procedural clutter
 tm-generate --out data/syn --crops --train 8000 --val 800 --workers 12
 
 # 2b. synthetic text rendered onto the real cleaned pages (page × 4 flips × repeats)
@@ -89,7 +89,7 @@ tm-export-detect --labels labelled.cvlabel --out data/detect_dataset
 ```
 
 `--crops` emits one crop per labelled region (plus some text-free negatives)
-instead of whole pages — this matches how the model is used at inference (on
+instead of whole pages, matching how the model is used at inference (on
 detector boxes, not pages), so always train with it. Expect the crop count to
 be ~2× the `--train` / `pages × flips × repeats` figure.
 
@@ -97,11 +97,11 @@ be ~2× the `--train` / `pages × flips × repeats` figure.
 
 `tm-train` reads one or more **packed** dataset roots, concatenating each root's
 `train/` and `valid/` splits. It always writes a fresh, self-contained run
-directory — nothing is overwritten between runs.
+directory; nothing is overwritten between runs.
 
 ```bash
 tm-train --config train.yaml --name syn-real-v1     # normal run
-tm-train --config train.yaml --smoke                # 12 epochs on 800 samples — is the wiring OK?
+tm-train --config train.yaml --smoke                # 12 epochs on 800 samples, wiring check
 tm-train --data data/packed_384 --encoder resnet34  # override anything from the file
 tm-train --config train.yaml --init latest --name v2 # continue from the last run's best.pt on new data
 ```
@@ -112,10 +112,10 @@ options (CLI flag = YAML key):
 | option | default | notes |
 |---|---|---|
 | `data` | `[./data/mask_dataset]` | list of `tm-pack` roots; splits are concatenated |
-| `name` | — | run dir is `runs/<timestamp>_<name>/` |
+| `name` | *(none)* | run dir is `runs/<timestamp>_<name>/` |
 | `arch` | `unet` | `unet` or `fpn` |
-| `encoder` | `resnet18` | any `segmentation-models-pytorch` encoder; this task is encoder-light — try `resnet34` only if stylised/SFX text is missed |
-| `init` | — | warm-start weights from a checkpoint: a run's `best.pt`, a run dir, or `latest`. Fresh optimiser / schedule / epoch count — just the weights. `arch`/`encoder` must match |
+| `encoder` | `resnet18` | any `segmentation-models-pytorch` encoder; this task is encoder-light, so try `resnet34` only if stylised/SFX text is missed |
+| `init` | *(none)* | warm-start weights from a checkpoint: a run's `best.pt`, a run dir, or `latest`. Fresh optimiser / schedule / epoch count, just the weights. `arch`/`encoder` must match |
 | `imgsz` | `384` | must match the pack's `imgsz`; 512 gives crisper edges on thin text at ~1.8× cost |
 | `batch` | `32` | 64 fits a 16 GB card at 384 |
 | `lr` | `3e-4` | AdamW + cosine decay over `epochs` |
@@ -126,16 +126,16 @@ options (CLI flag = YAML key):
 | `smoke` | `false` | quick wiring check: 12 epochs, 800-sample cap |
 | `limit` | `0` | cap train samples (`0` = all) |
 
-AMP is on automatically on CUDA. `Ctrl-C` is caught — the current `best.pt` /
+AMP is on automatically on CUDA. `Ctrl-C` is caught; the current `best.pt` /
 `last.pt` are kept and wandb closes cleanly.
 
-**Provenance** — every `tm-generate` output carries a `manifest.json` (source
+**Provenance**: every `tm-generate` output carries a `manifest.json` (source
 `.cvlabel`, repeats, seed, languages, fonts, crop count); `tm-pack` folds those
 into each pack's `meta.json`, and `tm-train` writes a per-split `data_summary`
 (e.g. `train: 15228 flat + 13411 cleaned.cvlabel[train]×30`) plus the full
 `data_sources` tree into `config.json` and the wandb config.
 
-**Curves from step 0** — the untrained model is evaluated before epoch 1 and
+**Curves from step 0**: the untrained model is evaluated before epoch 1 and
 logged at step 0, and training loss is logged every 20 optimiser steps, so wandb
 shows real curves partway through the first epoch instead of a single point.
 
@@ -147,7 +147,7 @@ runs/20260830-142530_syn-real-v1/
 ├── metrics.csv              epoch, train_loss, lr, val_iou/precision/recall
 ├── train.log                same lines printed to the console
 ├── checkpoints/
-│   ├── best.pt              highest val IoU so far  ← use this
+│   ├── best.pt              highest val IoU so far  (use this)
 │   └── last.pt              most recent epoch (resume / inspect)
 ├── samples/epoch_NNN.png    image | prediction | ground-truth strips, saved when IoU improves
 ├── wandb/                   only with --wandb
@@ -177,12 +177,12 @@ synthetic, judge real performance here on held-out manga crops.
 | `fonts` | font loading, hyphenation, per-font glyph-coverage pools (`charset_text`) |
 | `color` | `ColorGenerator`, contrast-safe text/outline colour |
 | `layout` | word-wrap (horizontal + vertical RTL), font-size fitting |
-| `render` | `TextSpec`, `place_text`, `compose` — the core primitive |
+| `render` | `TextSpec`, `place_text`, `compose`; the core primitive |
 | `geometry` | boxes, `letterbox` |
 | `clutter` | procedural non-text clutter (strokes, screentone, …) |
 | `surface` | flat-colour surfaces |
 | `page` | labelled-page ops: flip, `bubble_text_box` (via `compute_draw_bbox`), scatter |
-| `spec` | `SpecMaker` — a box + its background → a randomised `TextSpec` |
+| `spec` | `SpecMaker`: a box + its background → a randomised `TextSpec` |
 | `crops` | cut a composed page into per-region crops + negatives |
 | `parallel` | shard generation across processes |
 | `dataset` | `generate` / `generate_from_backgrounds` |
@@ -192,10 +192,10 @@ synthetic, judge real performance here on held-out manga crops.
 | `seg/` | `data` (dataset), `model`, `train` (+ `run` = run-dir), `infer`, `ui` |
 | `cli` | `tm-*` console entry points |
 
-Text that doesn't need to make sense — ~40% of blocks are random-glyph runs
+Text that doesn't need to make sense: ~40% of blocks are random-glyph runs
 sampled evenly across a script and filtered to the font's cmap, so the model
 sees rare kanji/hanzi/hangul. Japanese is set vertically ~half the time.
-~22% of blocks are oversized (short, huge text — SFX / titles) and a quarter of
+~22% of blocks are oversized (short, huge text like SFX / titles) and a quarter of
 crops are cut tight enough that text runs off the edge; training then adds
 random zoom-in (`_zoom`), all so tightly-cropped large text isn't OOD. Clutter +
 real backgrounds are what stop the model becoming an edge detector.
