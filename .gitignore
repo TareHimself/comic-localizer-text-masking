@@ -1,0 +1,11 @@
+/data
+/fonts
+/runs
+/wandb
+/.gradio
+*.pt
+__pycache__/
+*.egg-info/
+.venv/
+/dist
+/build

@@ -1,0 +1,18 @@
+# tm-train --config train.yaml --name syn-real-v1
+# CLI flags override anything set here.
+
+data: [./data/packed_384_v2]
+
+arch: unet
+encoder: resnet18
+imgsz: 384
+
+batch: 64          # ~7GB on a 16GB card; drop to 32 if OOM
+epochs: 80
+patience: 8        # stop if val IoU stalls this many epochs
+lr: 4e-4
+weight_decay: 1e-4
+workers: 12
+
+wandb: true
+wandb_project: text-mask-seg

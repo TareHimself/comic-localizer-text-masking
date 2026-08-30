@@ -1,0 +1,56 @@
+[project]
+name = "comic-localizer-text-masking"
+version = "0.1.0"
+description = "Synthetic data + training for the comic-localizer text-mask segmenter"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "comic-localizer",
+    "faker>=40.8.0",
+    "fonttools>=4.50",
+    "gradio>=5.0",
+    "numpy>=1.26",
+    "opencv-python-headless>=4.11.0.86",
+    "pillow>=12.1.1",
+    "pyphen>=0.17.2",
+    "segmentation-models-pytorch>=0.4.0",
+    "simple-parsing>=0.1.7",
+    "torch>=2.9.1",
+    "torchvision>=0.24.1",
+    "tqdm>=4.67.3",
+    "wandb>=0.24.0",
+]
+
+[project.scripts]
+tm-generate = "text_masking.cli:generate"
+tm-prep-pages = "text_masking.cli:prep_pages"
+tm-export-detect = "text_masking.cli:export_detect"
+tm-pack = "text_masking.cli:pack"
+tm-train = "text_masking.seg.train:main"
+tm-ui = "text_masking.seg.ui:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/text_masking"]
+
+[tool.uv]
+# ultralytics depends on opencv-python; we only want the headless build (it
+# provides the same cv2). Installing both corrupts the cv2 module on import.
+override-dependencies = ["opencv-python; python_version < '0'"]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+comic-localizer = { git = "https://github.com/TareHimself/comic-localizer", subdirectory = "localizer" }
+torch = [
+  { index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+torchvision = [
+  { index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
