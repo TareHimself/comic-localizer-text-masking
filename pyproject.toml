@@ -9,6 +9,7 @@ dependencies = [
     "faker>=40.8.0",
     "fonttools>=4.50",
     "gradio>=5.0",
+    "huggingface-hub>=0.26",
     "numpy>=1.26",
     "opencv-python-headless>=4.11.0.86",
     "pillow>=12.1.1",
@@ -29,6 +30,7 @@ tm-export-detect = "text_masking.cli:export_detect"
 tm-pack = "text_masking.cli:pack"
 tm-train = "text_masking.seg.train:main"
 tm-ui = "text_masking.seg.ui:main"
+tm-push-hf = "text_masking.cli:push_hf"
 
 [build-system]
 requires = ["hatchling"]

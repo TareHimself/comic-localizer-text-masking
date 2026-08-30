@@ -112,3 +112,28 @@ def pack() -> None:
     if not cfg.data:
         raise SystemExit("--data <root> [root ...]")
     _pack.pack(cfg.data, cfg.out, cfg.imgsz, cfg.workers)
+
+
+# --------------------------------------------------------------------------- #
+# tm-push-hf
+# --------------------------------------------------------------------------- #
+
+
+@dataclass
+class PushHfConfig:
+    repo: str  # HuggingFace repo id, e.g. "TareHimself/comic-text-mask"
+    run: str = "latest"  # a run dir, a best.pt, or "latest"
+    runs_dir: str = "./runs"
+    threshold: float = 0.5
+    tag: str = ""  # also create this git tag on the repo (a release version)
+    private: bool = False
+
+
+def push_hf() -> None:
+    from . import hub
+
+    cfg = parse(PushHfConfig)
+    hub.push(
+        cfg.run, cfg.repo, runs_dir=cfg.runs_dir,
+        threshold=cfg.threshold, tag=cfg.tag, private=cfg.private,
+    )

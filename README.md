@@ -170,6 +170,26 @@ Drop an image in and get the overlay, binary mask, and probability heat-map,
 with live threshold / dilation sliders. Because the combined val IoU is mostly
 synthetic, judge real performance here on held-out manga crops.
 
+### Publishing to the Hub
+
+```bash
+hf auth login                                              # once, needs a write token
+tm-push-hf --run latest --repo <user>/comic-text-mask --tag v1
+```
+
+Pushes a run's `best.pt` to one HuggingFace model repo as:
+
+| file | what |
+|---|---|
+| `config.json` + `model.safetensors` | pristine smp weights (`smp.from_pretrained`) |
+| `model.pt` | TorchScript: letterboxed uint8 RGB → probability, with `/255` + ImageNet normalisation + sigmoid baked into the graph |
+| `tm_meta.json` | `imgsz`, the letterbox contract, threshold, val metrics, languages |
+| `README.md` | model card (method, languages, usage, link back here) |
+
+`--tag` also creates/moves a git tag on the repo, so `smp.from_pretrained(repo,
+revision="v1")` or `hf_hub_download(repo, "model.pt", revision="v1")` pin a
+release. No dataset or font files are uploaded.
+
 ## Package layout (`src/text_masking/`)
 
 | module | what |
@@ -191,6 +211,7 @@ synthetic, judge real performance here on held-out manga crops.
 | `pack` | letterbox + memmap packing |
 | `clean` | LaMa inpainting of labelled text |
 | `export` | `.cvlabel` → YOLO detection dataset |
+| `hub` | export a run to the HuggingFace Hub (traced model + card) |
 | `seg/` | `data` (dataset), `model`, `train` (+ `run` = run-dir), `infer`, `ui` |
 | `cli` | `tm-*` console entry points |
 
