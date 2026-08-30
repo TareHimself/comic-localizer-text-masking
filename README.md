@@ -27,9 +27,11 @@ uv sync
 
 Installs the `text_masking` package (src layout) plus `comic-localizer`, pulled
 straight from [its repo](https://github.com/TareHimself/comic-localizer)
-(`localizer/` subdirectory) and pinned in `uv.lock`. Fonts live in `fonts/`
-(git-ignored; see `fonts/FONTS.md`); generated data and runs go under `data/`
-and `runs/` (both ignored).
+(`localizer/` subdirectory) at the commit pinned in `[tool.uv.sources]` (bump
+the `rev` there and re-`uv lock` to update). Font *files* go in `fonts/`
+(git-ignored); `fonts/fonts.yaml` lists which faces to render with, and
+`fonts/FONTS.md` covers licences and where to get them. Generated data and runs
+go under `data/` and `runs/` (both ignored).
 
 Labels are authored and inspected in **[cv-label](https://github.com/TareHimself/cv-label)**;
 the `.cvlabel` archive format is [documented there](https://github.com/TareHimself/cv-label/blob/main/formats/cvlabel/SPEC.md).
@@ -173,7 +175,7 @@ synthetic, judge real performance here on held-out manga crops.
 | module | what |
 |---|---|
 | `cvlabel` | `.cvlabel` archive read/write |
-| `languages` | `Language`, `LanguageSet`, `LanguageCycler`, `default_languages()` |
+| `languages` | `Language`, `LanguageSet`, `LanguageCycler`, `load_language_sets()` (reads `fonts/fonts.yaml`) |
 | `fonts` | font loading, hyphenation, per-font glyph-coverage pools (`charset_text`) |
 | `color` | `ColorGenerator`, contrast-safe text/outline colour |
 | `layout` | word-wrap (horizontal + vertical RTL), font-size fitting |

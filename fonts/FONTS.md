@@ -1,9 +1,9 @@
 # Fonts
 
-No font files ship with this repo. `tm-generate` looks for the names below under
-`fonts/` (set by `--fonts_dir`) and **silently skips any that are missing**;
-`default_languages()` drops a language set only if none of its fonts are present.
-So a minimal working setup is just the OFL / Apache faces.
+No font files ship with this repo. `fonts/fonts.yaml` lists the faces
+`tm-generate` renders with; it **silently skips any file missing** from `fonts/`
+(set by `--fonts_dir`) and drops a language set only if none of its fonts are
+present. So a minimal working setup is just the OFL / Apache faces.
 
 Supply your own copies. Licence status below is best-effort; verify before
 redistributing.
@@ -29,5 +29,5 @@ redistributing.
 | `reiko.ttf` | Reiko | public domain (ships with comic-localizer) | yes |
 | `msmincho.ttf` | MS Mincho | **proprietary** (Microsoft / Ricoh) | no |
 
-`default_languages()` needs at least one Latin face and, for Japanese/Korean/
-Chinese, `SourceHanSans.ttc`.
+You need at least one Latin face and, for Japanese / Korean / Chinese,
+`SourceHanSans.ttc`. Edit `fonts/fonts.yaml` to add or drop faces.

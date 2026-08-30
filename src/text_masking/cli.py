@@ -13,7 +13,7 @@ from . import export as _export
 from . import pack as _pack
 from .args import parse
 from .clean import clean_pages as _clean_pages
-from .languages import default_languages
+from .languages import load_language_sets
 
 
 # --------------------------------------------------------------------------- #
@@ -36,7 +36,7 @@ class GenerateConfig:
 
 def generate() -> None:
     cfg = parse(GenerateConfig)
-    sets = default_languages(cfg.fonts_dir)
+    sets = load_language_sets(cfg.fonts_dir)
 
     if cfg.backgrounds:
         dataset.generate_from_backgrounds(

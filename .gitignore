@@ -1,5 +1,7 @@
 /data
-/fonts
+/fonts/*
+!/fonts/fonts.yaml
+!/fonts/FONTS.md
 /runs
 /wandb
 /.gradio

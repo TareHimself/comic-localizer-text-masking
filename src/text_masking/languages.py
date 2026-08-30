@@ -1,5 +1,6 @@
 """Languages, font sets, and the round-robin that picks (language, font) pairs.
 
+The set list comes from `<fonts_dir>/fonts.yaml` (see `fonts/fonts.yaml`).
 `sep` is how a language's text splits into layout units: None = whitespace
 (Latin), "" = per character (CJK). Per-character languages can be set
 vertically.
@@ -8,6 +9,8 @@ vertically.
 import itertools
 import os
 from dataclasses import dataclass
+
+import yaml
 
 
 @dataclass
@@ -44,54 +47,41 @@ class LanguageCycler:
         return lang, next(self._fonts[lang.code])
 
 
-_LATIN_FONTS = [
-    "animeace2_bld.ttf",
-    "animeace2_ital.ttf",
-    "BlambotClassicBB-Bold.ttf",
-    "BlambotClassicBB-Italic.ttf",
-    "BlambotClassicBB.ttf",
-    "Roboto-Light.ttf",
-    "Roboto-Regular.ttf",
-    "Roboto-Bold.ttf",
-    "Roboto-Italic.ttf",
-]
-_JP_FONTS = [
-    "07YasashisaAntique.otf",
-    "07YasashisaBold.ttf",
-    "kowaiFont.ttf",
-    "LanobePOPv2.otf",
-    "M-NijimiMincho.otf",
-    "msmincho.ttf",
-    "NikumaruFont.otf",
-    "reiko.ttf",
-    "YasashisaGothicBold-V2.otf",
-    "SourceHanSans.ttc",
-]
+def _language(entry: str | dict, default_sep: str | None) -> Language:
+    if isinstance(entry, str):
+        return Language(entry, default_sep)
+    return Language(entry["code"], entry.get("sep", default_sep))
 
 
-def default_languages(fonts_dir: str = "fonts") -> list[LanguageSet]:
-    """The built-in en / ja / ko / zh set, fonts resolved against `fonts_dir`.
+def load_language_sets(fonts_dir: str = "fonts") -> list[LanguageSet]:
+    """Build the language/font sets from `<fonts_dir>/fonts.yaml`.
 
-    Fonts not present on disk are skipped (see `fonts/FONTS.md`); a set with no
-    surviving fonts is dropped. Raises if nothing is left."""
+    Font files missing from `fonts_dir` are skipped; a set left with no fonts is
+    dropped. Raises if the config is absent or nothing survives."""
+    cfg_path = os.path.join(fonts_dir, "fonts.yaml")
+    if not os.path.isfile(cfg_path):
+        raise FileNotFoundError(
+            f"{cfg_path} not found -- it lists the fonts to render with; "
+            "supply the font files it names (see fonts/FONTS.md)"
+        )
+    with open(cfg_path, encoding="utf-8") as f:
+        cfg = yaml.safe_load(f) or {}
 
-    def present(names: list[str]) -> list[str]:
-        return [
-            p for n in names
+    sets: list[LanguageSet] = []
+    for raw in cfg.get("sets", []):
+        default_sep = raw.get("sep")
+        langs = [_language(e, default_sep) for e in raw["languages"]]
+        fonts = [
+            p
+            for n in raw.get("fonts", [])
             if os.path.isfile(p := os.path.join(fonts_dir, n))
         ]
+        if langs and fonts:
+            sets.append(LanguageSet(langs, fonts))
 
-    candidates = [
-        LanguageSet([Language("en_US"), Language("en_GB")], present(_LATIN_FONTS)),
-        LanguageSet([Language("ja", "")], present(_JP_FONTS)),
-        LanguageSet(
-            [Language("ko", ""), Language("zh_CN", ""), Language("zh_TW", "")],
-            present(["SourceHanSans.ttc"]),
-        ),
-    ]
-    sets = [s for s in candidates if s.fonts]
     if not sets:
         raise FileNotFoundError(
-            f"no fonts found under {fonts_dir!r} -- see fonts/FONTS.md"
+            f"none of the fonts named in {cfg_path} are present in "
+            f"{fonts_dir!r} -- see fonts/FONTS.md"
         )
     return sets

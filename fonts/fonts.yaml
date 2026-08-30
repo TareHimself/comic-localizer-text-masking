@@ -1,0 +1,44 @@
+# Which fonts to render synthetic text with, grouped into sets that share a
+# language list. Read by text_masking.languages.load_language_sets().
+#
+# The font FILES are NOT distributed with this repo -- supply your own copies of
+# the faces named here. Licence status and sources are in FONTS.md; several
+# (Anime Ace, Blambot Classic, MS Mincho) are marked "not redistributable".
+# Any file missing from this directory is silently skipped, and a set left with
+# no fonts is dropped -- so an OFL/Apache-only subset still works.
+#
+# languages: a bare string is whitespace-segmented (Latin-style). For
+# per-character scripts (CJK), which may also be set vertically, give the set a
+# `sep: ""` or use `{code: ja, sep: ""}` per language.
+
+sets:
+  - languages: [en_US, en_GB]
+    fonts:
+      - Roboto-Light.ttf
+      - Roboto-Regular.ttf
+      - Roboto-Bold.ttf
+      - Roboto-Italic.ttf
+      - animeace2_bld.ttf              # Blambot -- not redistributable
+      - animeace2_ital.ttf             # Blambot -- not redistributable
+      - BlambotClassicBB.ttf           # Blambot -- not redistributable
+      - BlambotClassicBB-Bold.ttf      # Blambot -- not redistributable
+      - BlambotClassicBB-Italic.ttf    # Blambot -- not redistributable
+
+  - languages: [ja]
+    sep: ""
+    fonts:
+      - SourceHanSans.ttc
+      - 07YasashisaAntique.otf
+      - 07YasashisaBold.ttf
+      - YasashisaGothicBold-V2.otf
+      - NikumaruFont.otf
+      - LanobePOPv2.otf
+      - M-NijimiMincho.otf
+      - kowaiFont.ttf
+      - reiko.ttf
+      - msmincho.ttf                   # proprietary (MS/Ricoh) -- not redistributable
+
+  - languages: [ko, zh_CN, zh_TW]
+    sep: ""
+    fonts:
+      - SourceHanSans.ttc
