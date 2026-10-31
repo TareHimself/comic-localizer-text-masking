@@ -68,7 +68,7 @@ def generate() -> None:
 class PrepPagesConfig:
     labels: str  # input labelled .cvlabel
     out: str  # output cleaned .cvlabel
-    cleaner_model: str  # LaMa torchscript
+    cleaner_model: str = ""  # LaMa torchscript; empty -> the default from the HF Hub
     device: str = "cuda:0"
     pad: int = 6
 

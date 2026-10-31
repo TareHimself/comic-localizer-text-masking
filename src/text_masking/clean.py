@@ -21,11 +21,22 @@ from . import cvlabel
 REMOVE = ("Text", "Text In Bubble", "Text on Page", "Text On Page")
 KEEP = ("Speech Bubble", "Bubble", "Free Draw Area")
 
+DEFAULT_CLEANER_REPO = "TareHimself/AnimeMangaInpainting-torchscript"
+DEFAULT_CLEANER_FILE = "anime_manga_lama.pt"
+
+
+def _resolve_cleaner_model(cleaner_model: str) -> str:
+    if cleaner_model:
+        return cleaner_model
+    from huggingface_hub import hf_hub_download
+
+    return hf_hub_download(DEFAULT_CLEANER_REPO, DEFAULT_CLEANER_FILE)
+
 
 async def _clean(
     labels: str,
     out: str,
-    cleaner_model: str,
+    cleaner_model: str = "",
     device: str = "cuda:0",
     pad: int = 6,
     remove: tuple = REMOVE,
@@ -38,7 +49,9 @@ async def _clean(
     if device.startswith("cuda") and not torch.cuda.is_available():
         print("CUDA unavailable -> CPU (slow).")
         device = "cpu"
-    cleaner = LamaCleaner(model_path=cleaner_model, device=torch.device(device))
+    cleaner = LamaCleaner(
+        model_path=_resolve_cleaner_model(cleaner_model), device=torch.device(device)
+    )
 
     out_pages: list[cvlabel.Sample] = []
     for page in tqdm(cvlabel.read(labels), desc="pages"):
@@ -70,5 +83,5 @@ async def _clean(
     print(f"{len(out_pages)} pages, {regions} draw regions -> {out}")
 
 
-def clean_pages(labels: str, out: str, cleaner_model: str, **kw) -> None:
+def clean_pages(labels: str, out: str, cleaner_model: str = "", **kw) -> None:
     asyncio.run(_clean(labels, out, cleaner_model, **kw))

@@ -135,4 +135,16 @@ class SpecMaker:
             # big glyphs: keep the mask tight so complex kanji counters stay open
             mask_pad=1 if big else 2,
             mask_dilate=0 if big else 1,
+            # a hand-drawn wavy / jagged emphasis line beside the text
+            emphasis=r.random() < 0.12,
+            # ruby kana beside CJK
+            furigana=lang.sep == "" and r.random() < 0.25,
+            # SFX gets a real tilt; bubble text a slight hand-lettered wobble
+            rotate=(
+                r.uniform(-27, 27) if big and r.random() < 0.6
+                else r.uniform(-4, 4) if r.random() < 0.3
+                else 0.0
+            ),
+            # faux bold for shouting / emphasis (dilate only -- never erases ink)
+            stroke_bias=r.choice([0, 0, 0, 0, 0, 1, 1, 2]),
         )

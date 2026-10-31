@@ -61,7 +61,7 @@ class FlatPages:
                 for box in random_boxes(w, h, r.randint(1, self.max_boxes), r):
                     items.append((box, maker.for_box(surface, box, over_art=over_art)))
 
-            yield compose(surface, items), [b for b, _ in items], r
+            yield compose(surface, items, r), [b for b, _ in items], r
 
 
 @dataclass
@@ -106,7 +106,7 @@ class LabelledPages:
                         for box in free_text_boxes(area, r, self.area_fill_prob):
                             items.append((box, maker.for_box(page.image, box, over_art=True)))
 
-                    yield compose(page.image, items), [b for b, _ in items], r
+                    yield compose(page.image, items, r), [b for b, _ in items], r
 
 
 def generate(

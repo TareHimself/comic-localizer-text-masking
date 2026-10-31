@@ -71,8 +71,9 @@ Every `tm-*` command takes `--config <file>` (YAML or JSON) for its defaults;
 for the full option list.
 
 ```bash
-# 1. clean labelled pages: inpaint the text out (needs a LaMa torchscript)
-tm-prep-pages --labels labelled.cvlabel --out data/cleaned.cvlabel --cleaner_model lama_cleaning.pt
+# 1. clean labelled pages: inpaint the text out
+#    (downloads a LaMa torchscript from the Hub; pass --cleaner_model <path> to override)
+tm-prep-pages --labels labelled.cvlabel --out data/cleaned.cvlabel
 
 # 2a. synthetic dataset: flat colour surfaces + procedural clutter
 tm-generate --out data/syn --crops --train 8000 --val 800 --workers 12
@@ -217,8 +218,13 @@ release. No dataset or font files are uploaded.
 
 Text that doesn't need to make sense: ~40% of blocks are random-glyph runs
 sampled evenly across a script and filtered to the font's cmap, so the model
-sees rare kanji/hanzi/hangul. Japanese is set vertically ~half the time.
-~22% of blocks are oversized (short, huge text like SFX / titles) and a quarter of
-crops are cut tight enough that text runs off the edge; training then adds
-random zoom-in (`_zoom`), all so tightly-cropped large text isn't OOD. Clutter +
-real backgrounds are what stop the model becoming an edge detector.
+sees rare kanji/hanzi/hangul. ~15% of those glyphs are swapped for punctuation
+(`。 、 … ― 「」 !? ??`) so the small, isolated marks aren't drowned out. Blocks
+also get, at their own rates: a wavy/jagged emphasis line beside the text
+(~12%), ruby kana on CJK (~25%), a tilt (SFX ±27°, bubble text a few degrees),
+and faux bold/thin strokes. Japanese is set vertically ~half the time. ~22% of
+blocks are oversized (short, huge text like SFX / titles) and a quarter of crops
+are cut tight enough that text runs off the edge; training adds random zoom-in
+(`_zoom`), and crops are JPEG-degraded so their edges aren't crisper than a real
+scan's. Clutter + real backgrounds are what stop the model becoming an edge
+detector.

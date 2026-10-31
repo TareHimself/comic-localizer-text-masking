@@ -8,7 +8,27 @@ loose detector box; a few text-free crops are added as negatives.
 
 from collections.abc import Iterator
 
+import cv2
+import numpy as np
+
 from .render import Box, Sample
+
+
+def _degrade(img: np.ndarray, rand, prob: float = 0.7) -> np.ndarray:
+    """JPEG ringing + a touch of blur / noise, so a synthetic crop's edges
+    aren't crisper than a real scan's."""
+    if rand.random() >= prob:
+        return img
+    if rand.random() < 0.5:
+        img = cv2.GaussianBlur(img, (0, 0), rand.uniform(0.4, 0.9))
+    ok, enc = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, rand.randint(55, 92)])
+    if ok:
+        img = cv2.imdecode(enc, cv2.IMREAD_COLOR)
+    if rand.random() < 0.4:
+        rng = np.random.default_rng(rand.getrandbits(32))
+        noise = rng.normal(0.0, rand.uniform(1.5, 5.0), img.shape)
+        img = np.clip(img.astype(np.float32) + noise, 0, 255).astype(np.uint8)
+    return img
 
 
 def page_crops(
@@ -22,6 +42,7 @@ def page_crops(
     min_size: int = 40,
     negative_prob: float = 0.35,
     max_negatives: int = 2,
+    degrade_prob: float = 0.7,
 ) -> Iterator[Sample]:
     h, w = page.image.shape[:2]
 
@@ -36,7 +57,7 @@ def page_crops(
         cy2 = min(h, int(y2 + bh * rand.uniform(lo, hi)))
         if cx2 - cx1 >= min_size and cy2 - cy1 >= min_size:
             yield Sample(
-                page.image[cy1:cy2, cx1:cx2].copy(),
+                _degrade(page.image[cy1:cy2, cx1:cx2].copy(), rand, degrade_prob),
                 page.mask[cy1:cy2, cx1:cx2].copy(),
             )
 
@@ -50,4 +71,7 @@ def page_crops(
         cx1, cy1 = rand.randint(0, w - cw), rand.randint(0, h - ch)
         m = page.mask[cy1 : cy1 + ch, cx1 : cx1 + cw]
         if m.mean() < 2:  # essentially no text
-            yield Sample(page.image[cy1 : cy1 + ch, cx1 : cx1 + cw].copy(), m.copy())
+            yield Sample(
+                _degrade(page.image[cy1 : cy1 + ch, cx1 : cx1 + cw].copy(), rand, degrade_prob),
+                m.copy(),
+            )
